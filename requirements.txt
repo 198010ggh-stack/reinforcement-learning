@@ -1,0 +1,3 @@
+#安装库说明
+numpy
+matplotlib
