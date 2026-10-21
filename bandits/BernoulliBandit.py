@@ -48,22 +48,22 @@ class Solver: #求解器
 			self.actions.append(k)
 			self.update_regret(k)
 
-class EpsilonGreedy(Solver):
-	"""epsilon算法"""
-	def __init__(self, bandit, epsilon = 0.01,init_prob = 1.):
-		super().__init__(bandit)
-		self.epsilon = epsilon
-		#所有拉杆的奖励估值
-		self.estimates = np.array([init_prob]*self.bandit.K)
+# class EpsilonGreedy(Solver):
+# 	"""epsilon算法"""
+# 	def __init__(self, bandit, epsilon = 0.01,init_prob = 1.):
+# 		super().__init__(bandit)
+# 		self.epsilon = epsilon
+# 		#所有拉杆的奖励估值
+# 		self.estimates = np.array([init_prob]*self.bandit.K)
 
-	def run_one_step(self):
-		if np.random.random() < self.epsilon:
-			k = np.random.randint(0,self.bandit.K)
-		else:
-			k = np.argmax(self.estimates)
-		r = self.bandit.step(k)
-		self.estimates[k] += 1./(self.counts[k]+1)*(r - self.estimates[k])
-		return k
+# 	def run_one_step(self):
+# 		if np.random.random() < self.epsilon:
+# 			k = np.random.randint(0,self.bandit.K)
+# 		else:
+# 			k = np.argmax(self.estimates)
+# 		r = self.bandit.step(k)
+# 		self.estimates[k] += 1./(self.counts[k]+1)*(r - self.estimates[k])
+# 		return k
 
 def plot_results(solvers,solver_name):
 	"""生成累积懊悔随时间变化的图像。输入solvers是一个列表,列表中的每个元素是一种特定的策略。"""
@@ -76,10 +76,43 @@ def plot_results(solvers,solver_name):
 	plt.legend() #显示图例
 	plt.show() #显示整张图
 
-np.random.seed(1)
-epsilon_greedy_solver = EpsilonGreedy(bandit_10_arm,epsilon = 0.01)
-epsilon_greedy_solver.run(5000)
-print('epsilon-贪婪算法的累积懊悔为：', epsilon_greedy_solver.regret)
-plot_results([epsilon_greedy_solver], ["EpsilonGreedy"])
+# np.random.seed(1)
+# epsilon_greedy_solver = EpsilonGreedy(bandit_10_arm,epsilon = 0.01)
+# epsilon_greedy_solver.run(5000)
+# print('epsilon-贪婪算法的累积懊悔为：', epsilon_greedy_solver.regret)
+# plot_results([epsilon_greedy_solver], ["EpsilonGreedy"])
 		
+# np.random.seed(0)
+# epsilons = [1e-4, 0.01, 0.1, 0.25, 0.5]
+# espilon_greedy_solver_list = [EpsilonGreedy(bandit_10_arm,epsilon=e)for e in epsilons]
+# epsilons_greedy_names = ["epsilon={}".format(e) for e in epsilons]
+# for solver in espilon_greedy_solver_list:
+# 	solver.run(5000)
 
+# plot_results(espilon_greedy_solver_list,epsilons_greedy_names)
+
+class DecayingEpsilonGreedy(Solver):
+    """ epsilon值随时间衰减的epsilon-贪婪算法,继承Solver类 """
+    def __init__(self, bandit, init_prob=1.0):
+        super(DecayingEpsilonGreedy, self).__init__(bandit)
+        self.estimates = np.array([init_prob] * self.bandit.K)
+        self.total_count = 0
+
+    def run_one_step(self):
+        self.total_count += 1
+        if np.random.random() < 1 / self.total_count:  # epsilon值随时间衰减
+            k = np.random.randint(0, self.bandit.K)
+        else:
+            k = np.argmax(self.estimates)
+
+        r = self.bandit.step(k)
+        self.estimates[k] += 1. / (self.counts[k] + 1) * (r - self.estimates[k])
+
+        return k
+
+
+np.random.seed(1)
+decaying_epsilon_greedy_solver = DecayingEpsilonGreedy(bandit_10_arm)
+decaying_epsilon_greedy_solver.run(5000)
+print('epsilon值衰减的贪婪算法的累积懊悔为：', decaying_epsilon_greedy_solver.regret)
+plot_results([decaying_epsilon_greedy_solver], ["DecayingEpsilonGreedy"])
