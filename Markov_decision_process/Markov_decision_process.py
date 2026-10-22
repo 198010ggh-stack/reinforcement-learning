@@ -24,7 +24,7 @@ P = np.array([
 R = np.array(rewards)
 gamma = 0.5
 
-V = np.zeros(len(rewards))
+V = np.zeros(len(rewards))#貝爾曼函數
 for i in range(1000):
 	V = R + gamma*(P@V)
 print(np.round(V,2))

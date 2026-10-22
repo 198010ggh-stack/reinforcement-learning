@@ -40,6 +40,27 @@ Pi = {
 	("s4", "前往s5"): 0.5,
 	("s4", "機率前往"): 0.5,
 }
+Pi_2 = {
+	("s1", "保持s1"): 0.6,
+	("s1", "前往s2"): 0.4,
+	("s2", "前往s1"): 0.3,
+	("s2", "前往s3"): 0.7,
+	("s3", "前往s4"): 0.5,
+	("s3", "前往s5"): 0.5,
+	("s4", "前往s5"): 0.1,
+	("s4", "機率前往"): 0.9,
+}
+
+Pi_3 = {
+	("s1", "保持s1"): 0.,
+	("s1", "前往s2"): 1.,
+	("s2", "前往s1"): 1.,
+	("s2", "前往s3"): 0.,
+	("s3", "前往s4"): 1.,
+	("s3", "前往s5"): 0.,
+	("s4", "前往s5"): 1.,
+	("s4", "機率前往"): 0.,
+}
 
 # 狀態名稱 → 陣列索引，例如 "s1" → 0、"s4" → 3
 idx = {s: i for i, s in enumerate(S)}
@@ -77,3 +98,19 @@ def compute_Q(P, R, V, gamma):
 				future += p * V[idx[s2]]
 		Q[(s, a)] = r + gamma * future
 	return Q
+
+# R_mrp, P_mrp = mdp_to_mrp(P, R, Pi_2)
+# print(R_mrp)
+# print(P_mrp)
+# print(np.round(compute_V(R_mrp, P_mrp, gamma), 2))
+# R_mrp, P_mrp = mdp_to_mrp(P, R, Pi)        # Pi 是你的策略 1
+# V = compute_V(R_mrp, P_mrp, gamma)
+# Q = compute_Q(P, R, V, gamma)
+# for key, q in Q.items():
+#     print(key, round(q, 2))
+R_mrp, P_mrp = mdp_to_mrp(P, R, Pi_3)        # Pi 是你的策略 1
+V = compute_V(R_mrp, P_mrp, gamma)
+Q = compute_Q(P, R, V, gamma)
+for key, q in Q.items():
+    print(key, round(q, 2))
+
