@@ -99,6 +99,37 @@ def compute_Q(P, R, V, gamma):
 		Q[(s, a)] = r + gamma * future
 	return Q
 
+# ===== 第 6 步：策略改進 =====
+def improve_policy(Q):
+	"""每個狀態只選 Q 最大的動作，回傳新的策略"""
+	# ① 找出每個狀態 Q 最大的動作
+	best_a = {}
+	for (s, a), q in Q.items():
+		if s not in best_a or q > Q[(s, best_a[s])]:
+			best_a[s] = a
+	# ② 選中的動作給 1.0，其他給 0.0
+	new_Pi = {}
+	for (s, a) in Q:
+		if a == best_a[s]:
+			new_Pi[(s, a)] = 1.0
+		else:
+			new_Pi[(s, a)] = 0.0
+	return new_Pi
+
+# ===== 第 7 步：策略迭代 =====
+def policy_iteration(P, R, Pi, gamma):
+	"""評估 → 改進 → 評估 → 改進 …，直到策略不再改變"""
+	for k in range(1, 101):  # 最多跑 100 輪，避免無限迴圈
+		R_mrp, P_mrp = mdp_to_mrp(P, R, Pi)  # ① 策略評估
+		V = compute_V(R_mrp, P_mrp, gamma)
+		Q = compute_Q(P, R, V, gamma)        # ② 策略改進
+		new_Pi = improve_policy(Q)
+		print(f"第 {k} 輪：V = {np.round(V, 2)}")
+		if new_Pi == Pi:                     # ③ 策略沒變 → 找到最優策略
+			break
+		Pi = new_Pi
+	return Pi, V
+
 # R_mrp, P_mrp = mdp_to_mrp(P, R, Pi_2)
 # print(R_mrp)
 # print(P_mrp)
@@ -108,9 +139,16 @@ def compute_Q(P, R, V, gamma):
 # Q = compute_Q(P, R, V, gamma)
 # for key, q in Q.items():
 #     print(key, round(q, 2))
-R_mrp, P_mrp = mdp_to_mrp(P, R, Pi_3)        # Pi 是你的策略 1
+R_mrp, P_mrp = mdp_to_mrp(P, R, Pi)        # Pi 是你的策略 1
 V = compute_V(R_mrp, P_mrp, gamma)
 Q = compute_Q(P, R, V, gamma)
 for key, q in Q.items():
     print(key, round(q, 2))
+best_Pi, best_V = policy_iteration(P, R, Pi, gamma)
+print("最優策略：")
+for (s, a), p in best_Pi.items():
+	if p == 1.0:
+		print(f"  在 {s} 選「{a}」")
+
+
 
