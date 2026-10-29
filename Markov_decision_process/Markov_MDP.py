@@ -130,6 +130,31 @@ def policy_iteration(P, R, Pi, gamma):
 		Pi = new_Pi
 	return Pi, V
 
+def value_iteration(P,R,gamma,theta =1e-6):
+	"""每輪輸出直接最好的動作： Vs = maxQ(s,a),直到a不再改變"""
+	V = np.zeros(len(S))
+	for k in range(1,1001):
+		Q = compute_Q(P,R,V,gamma)
+		#每個狀態的V = 它所有動作中最大的Q
+		best_q = {}
+		for(s,a),q in Q.items():
+			if s not in best_q or q > best_q[s]:
+				best_q[s] = q
+		new_V = np.zeros(len(S))
+		for s,q in best_q.items():
+			new_V[idx[s]] = q
+		print(f"第 {k} 輪：V = {np.round(new_V, 2)}")
+		if np.max(abs(V-new_V)) < theta:
+			break
+		V = new_V
+	best_Pi = improve_policy(compute_Q(P,R,new_V,gamma))
+	return best_Pi,new_V
+		
+
+
+
+
+
 # R_mrp, P_mrp = mdp_to_mrp(P, R, Pi_2)
 # print(R_mrp)
 # print(P_mrp)
@@ -139,16 +164,22 @@ def policy_iteration(P, R, Pi, gamma):
 # Q = compute_Q(P, R, V, gamma)
 # for key, q in Q.items():
 #     print(key, round(q, 2))
-R_mrp, P_mrp = mdp_to_mrp(P, R, Pi)        # Pi 是你的策略 1
-V = compute_V(R_mrp, P_mrp, gamma)
-Q = compute_Q(P, R, V, gamma)
-for key, q in Q.items():
-    print(key, round(q, 2))
-best_Pi, best_V = policy_iteration(P, R, Pi, gamma)
+# R_mrp, P_mrp = mdp_to_mrp(P, R, Pi)        # Pi 是你的策略 1
+# V = compute_V(R_mrp, P_mrp, gamma)
+# Q = compute_Q(P, R, V, gamma)
+# for key, q in Q.items():
+#     print(key, round(q, 2))
+# best_Pi, best_V = policy_iteration(P, R, Pi, gamma)
+# print("最優策略：")
+# for (s, a), p in best_Pi.items():
+# 	if p == 1.0:
+# 		print(f"  在 {s} 選「{a}」")
+best_Pi, best_V = value_iteration(P,R,gamma)
 print("最優策略：")
 for (s, a), p in best_Pi.items():
 	if p == 1.0:
 		print(f"  在 {s} 選「{a}」")
+
 
 
 
